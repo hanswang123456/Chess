@@ -1,0 +1,21 @@
+body{
+    background-color: whitesmoke;
+    max-width: 100%;
+    max-width: 100%;
+    margin:0px auto;
+}
+#board{
+    margin:0 auto;
+}
+td{
+    width:73px;
+    height: 73px;
+    vertical-align:middle;
+     text-align:center;
+}
+img{
+    width:65%;
+    height:65%;
+    display:block; 
+    margin:0 auto;
+}
