@@ -127,7 +127,6 @@ var allCounterMoves = [];
 //eval tracker
 var evaluation = 0;
 
-//has issues
 function selectSquare(coordinate){
     //try to validate the left right behaviour of where the rooks are
     blackCastle.l = blackCastle.r = whiteCastle.l = whiteCastle.r = true;
