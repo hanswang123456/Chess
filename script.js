@@ -352,7 +352,6 @@ function moveL(x, y) {
         }
     }
 }
-//done (did not yet add castling)
 function moveK(x, y) {
     for (let i = 0; i < kingPattern.length; i++) {
         if (y + kingPattern[i][1] > -1 && y + kingPattern[i][1] < 8 && x + kingPattern[i][0] > -1 && x + kingPattern[i][0] < 8) {
@@ -451,7 +450,7 @@ function clearHighlight() {
         refill = !refill;
     }
 }
-//done (might have bugs)
+//done 
 function getStartingPiece(clickX, clickY) {
     movingPiece.x = clickX;
     movingPiece.y = clickY;
@@ -559,8 +558,7 @@ function checkCheck(){
         }
     }
 }
-/////problems start here!!!!!!!!!!!!!!!!!!!!!
-//recurive search is not working
+//need to optimize recursive search.
 
 //get overall sum of board
 function getBoardTotal(board) {
@@ -602,7 +600,7 @@ function findBestAIMove(){
     }
 
     console.log(bestMove[0][0]+"_"+bestMove[0][1]+" to "+ bestMove[1][0]+"_"+bestMove[1][1]);
-    //********************** where the moving happens***************** doesnt seem to work//
+    //********************** where the moving happens***************** 
     selectSquare(bestMove[0][0]+"_"+bestMove[0][1]);
     selectSquare(bestMove[1][0]+"_"+bestMove[1][1]);
     /*
@@ -714,6 +712,7 @@ function getAllCounterMoves(currentDepth){
 }
 */
 function resolveCheck(){
+    //adding in colored tiles, complete by May 3rd
     for(let y = 0; y<7; y++){
         for(let x = 0; x<7; x++){
             continue;
