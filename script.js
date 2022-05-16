@@ -1,3 +1,4 @@
+
 //get board template from html to work on
 var boardGenerate = document.getElementById("board");
 var currentcolor = false;
@@ -122,8 +123,6 @@ var gameTree = [];
 var squaredAttackedbyW = [];
 var squaredAttackedbyB = [];
 
-var allAIMoves = [];
-var allCounterMoves = [];
 //eval tracker
 var evaluation = 0;
 
@@ -138,7 +137,7 @@ function selectSquare(coordinate){
     clickY = Number(coordinate.substring(2, 3));
     //when either kings are attacked
     if(blackCastle.check == true||whiteCastle.check == true){
-        checkCheck();
+        //checkCheck();
         resolveCheck();
     }
     //empty selection
@@ -170,8 +169,6 @@ function selectSquare(coordinate){
                 //remove traces
                 movingPiece.x = null;
                 movingPiece.y = null;
-                //get board sum for reference
-                mathCalculations.boardSum = getBoardTotal(boardSimpleView);        
                 //clear up moves
                 totalMoves = [];
                 totalMovesExclusions = [];
@@ -180,17 +177,14 @@ function selectSquare(coordinate){
                 //switch whose turn it is
                 performMove.color *= -1;
                 //if playing against computer(doesnt work yet)
-                console.log(boardSimpleView);
-
                 break;
             }
         }
-        /*
+        
         if(performMove.color<0){
             findBestAIMove();
-            console.log(performMove.color)
         }
-        */
+        
     }
 }
 function aiGetMoves(x, y, board) {
@@ -507,7 +501,7 @@ function getAttackingSquare() {
         }
     }
     moveCounter++;
-    checkCheck();
+    //checkCheck();
 }
 function sortAttackingSquare(x, y) {
     //sort squares given the current turn
@@ -569,99 +563,134 @@ function getBoardTotal(board) {
     }
     return total;
 }
-function findBestAIMove(){
-    var start = new Date();
+function findBestAIMove(){ 
+    let startTime = new Date();
+    let board = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
+    for(let i = 0; i<8; i++){
+        for(let j = 0; j<8; j++){
+        board[j][i] = boardSimpleView[j][i];
+        }
+    }
     // CODE
-    getAllBlackMoves(boardSimpleView);
-
+    getAllBlackMoves(board);
     let layer = allAIMoves;
-    let bestScore = 1000;
+
+    let lowestScore = 1000;
     let bestMove = [];
+
     //all the black pieces(location)
-    for (let i = 0; i< layer.length; i += 2){
+    for (let i = 0; i<layer.length; i += 2){
+        
         //use the trailing index to access the possible moves of the piece
         //find length of following index(where the possible moves are)
         for (let j = 0; j < layer[i + 1].length; j++) {
-            evaluation++;
+            var currentPiece = board[layer[i][1]][layer[i][0]];
             //use the resulting to find the board total value; temporarily store these values in an array
             //originally empty ----------------------------------> originally filled
-            boardSimpleView[layer[i + 1][j][1]][layer[i + 1][j][0]] = boardSimpleView[layer[i][1]][layer[i][0]];
-            //replace
-            boardSimpleView[layer[i][1]][layer[i][0]] = 0;
-            let score = miniMax(boardSimpleView, 5, true);
-            boardSimpleView[layer[i][1]][layer[i][0]] = boardSimpleView[layer[i + 1][j][1]][layer[i + 1][j][0]];
-            boardSimpleView[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
-            if(score<bestScore){
-                bestScore = score;
+            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = currentPiece;
+            //complete move
+            board[layer[i][1]][layer[i][0]] = 0;
+
+            //search the next board
+            let score = miniMax(board, 6, -1000,1000, true, 5);
+            //reset board
+            board[layer[i][1]][layer[i][0]] = currentPiece;
+            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
+
+            if(score<lowestScore){
+                lowestScore = score;
                 bestMove = [[layer[i][0],layer[i][1]], [layer[i + 1][j][0],layer[i + 1][j][1]]];
             }
         }
     }
-
     console.log(bestMove[0][0]+"_"+bestMove[0][1]+" to "+ bestMove[1][0]+"_"+bestMove[1][1]);
     //********************** where the moving happens***************** 
     selectSquare(bestMove[0][0]+"_"+bestMove[0][1]);
     selectSquare(bestMove[1][0]+"_"+bestMove[1][1]);
-    /*
-    var time = new Date() - start;
-    console.log(boardSimpleView);
-    console.log(ai.board);
-    console.log("it took: "+time/1000+"s");
-    console.log("made "+evaluation+" evaluations");
-    */
+
+    let endTime = new Date();
+    let time = endTime-startTime;
+
+    console.log("This algorithm took: "+(time/1000)+" seconds to execute!")
 }
 
-function miniMax(board, depth, isMaximizing){
-
-    if(depth == 0){
-        return getBoardTotal(board);
+function miniMax(board, depth, isMaximizing,alpha, beta, totalDepth){
+    let newBoard = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
+    for(let i = 0; i<8; i++){
+        for(let j = 0; j<8; j++){
+        newBoard[j][i] = board[j][i];
+        }
+    }
+    let assessedDepth = depth-1;
+    if(assessedDepth == 0){
+        return getBoardTotal(newBoard);
     }
    if(isMaximizing === true){
-    getAllCounterMoves(board);
-    let layer = allCounterMoves;
-    let bestScore = -100;
+    let layer = getAllCounterMoves(newBoard);
+    let highestScore = -1000;
 
     for (let i = 0; i < layer.length; i += 2){
         //use the trailing index to access the possible moves of the piece
         for (let j = 0; j < layer[i + 1].length; j++) {
-            evaluation++;
+            var currentPiece = newBoard[layer[i][1]][layer[i][0]];
+            //evaluation++;
             //use the resulting to find the board total value; temporarily store these values in an array
-            //original blank --------------------------> original filled
-            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = board[layer[i][1]][layer[i][0]];
+            //move the piece on the current board
+            newBoard[layer[i + 1][j][1]][layer[i + 1][j][0]] =currentPiece;
+            //clear current square
+            newBoard[layer[i][1]][layer[i][0]] = 0;
 
-            board[layer[i][1]][layer[i][0]] = 0;
+            //highestScore = getBoardTotal(board);
+            let score= miniMax(newBoard, assessedDepth, false, alpha, beta, totalDepth);
+            newBoard[layer[i][1]][layer[i][0]] = currentPiece;
+            newBoard[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
 
-            let score = miniMax(board, depth-1, false);
-            board[layer[i][1]][layer[i][0]] = board[layer[i + 1][j][1]][layer[i + 1][j][0]];
-            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
+            ///pruning search tree
+            //alpha = Math.max(alpha, score);
+            //if(beta<=alpha){
+               // break;
+            //}
 
-            bestScore = Number(Math.max(score, bestScore));
+            highestScore = Math.max(score, highestScore);
+            
         }
     }
-    return bestScore;
+    return highestScore;
 }
 else{
-    getAllBlackMoves(board);
-    let layer = allAIMoves;
-    let bestScore = 100;
+    
+    let layer = getAllBlackMoves(newBoard);
+    let lowestScore = 1000;
 
     for (let i = 0; i < layer.length; i += 2){
         //use the trailing index to access the possible moves of the piece
         for (let j = 0; j < layer[i + 1].length; j++) {
+            var currentPiece = board[layer[i][1]][layer[i][0]];
             //use the resulting to find the board total value; temporarily store these values in an array
-            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = board[layer[i][1]][layer[i][0]];
+           newBoard[layer[i + 1][j][1]][layer[i + 1][j][0]] = currentPiece;
 
-            board[layer[i][1]][layer[i][0]] = 0;
+            newBoard[layer[i][1]][layer[i][0]]= 0;
+            //lowestScore = getBoardTotal(board);
 
-            let score = miniMax(board, depth-1, true);
+            let score = miniMax(board,assessedDepth, true, alpha, beta, totalDepth);
 
-            board[layer[i][1]][layer[i][0]] = board[layer[i + 1][j][1]][layer[i + 1][j][0]];
-            board[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
+            //unmoves
+            newBoard[layer[i][1]][layer[i][0]] = currentPiece;
+            newBoard[layer[i + 1][j][1]][layer[i + 1][j][0]] = 0;
 
-            bestScore = Number(Math.min(score, bestScore));
+            ///pruning search tree
+            //beta = Math.min(beta, score);
+            //if(beta<=alpha){
+            //    break;
+            //}
+
+            lowestScore = Math.min(score, lowestScore);
+            
+
+
         }
     }
-    return bestScore;
+    return lowestScore;
 }
 }
 function getAllBlackMoves(currentDepth) {
@@ -678,6 +707,7 @@ function getAllBlackMoves(currentDepth) {
             }
         }
     }
+return allAIMoves;
 }
 function getAllCounterMoves(currentDepth){
     allCounterMoves = [];
@@ -692,6 +722,7 @@ function getAllCounterMoves(currentDepth){
             }
         }
     }
+    return allCounterMoves;
 }
 
 /*function greatestVal(arr){
